@@ -65,5 +65,5 @@ The first chapter of my dissertation presents a methods-based approach for measu
 
 Outside of school, I enjoy biking, camping, and GT3/4 racing.
 
-Thank you for visiting my personal website! You may find my current CV (updated August 2021) at the top of the page.
+Thank you for visiting my personal website! You may find my current CV (updated August 2021) at the top of the page. You may reach me via email at samuel [dot] jens [@] stonybrook [dot] edu. 
 
