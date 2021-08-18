@@ -1,9 +1,9 @@
 baseURL: https://example.com
-googleAnalytics: UA/G-123123-12
+googleAnalytics: 
 languageCode: en-us
 enableEmoji: yes
 theme: avicenna
-title: YOUR_NAME
+title: Samuel Jens
 paginate: 10
 markup:
   tableOfContents:
@@ -11,4 +11,4 @@ markup:
     ordered: no
     startLevel: 1
 params:
-  name: YOUR_NAME
+  name: Samuel Jens

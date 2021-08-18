@@ -16,20 +16,20 @@
 </div>
 {{end}}
 
-{{if $aboutPage.Params.academia}}
-<div class="academia col">
-    <h4 class="main_color">Academia</h4>
-    {{range $academia := $aboutPage.Params.academia}}
+{{if $aboutPage.Params.education}}
+<div class="education col">
+    <h4 class="main_color">Education</h4>
+    {{range $education := $aboutPage.Params.education}}
     <div class="row">
         <div class="course col">
             <div class="institution_dates row">
                 <div class="institution col" id="institution_title">
-                    {{$academia.course.institution}}
+                    {{$education.course.institution}}
                 </div>
                 <div class="main_color dates col-md-auto  justify-content-end">
-                    {{$academia.course.start_date}}
-                    {{ if $academia.course.end_date }}
-                    - {{$academia.course.end_date}}
+                    {{$education.course.start_date}}
+                    {{ if $education.course.end_date }}
+                    - {{$education.course.end_date}}
                     {{else}}
                     - present
                     {{end}}
@@ -37,18 +37,18 @@
             </div>
             <div class="degree_major row">
                 <div class="text-muted col">
-                    {{$academia.course.degree}} {{$academia.course.major}}
+                    {{$education.course.degree}} {{$education.course.major}}
 
-                    {{if $academia.course.minor }}
-                    , Minor: {{$academia.course.minor}}
+                    {{if $education.course.minor }}
+                    , Minor: {{$education.course.minor}}
                     {{end}}
                 </div>
             </div>
 
-            {{if $academia.course.other_info}}
+            {{if $education.course.other_info}}
             <div class="other_info row text-muted">
                 <div class="col">
-                    {{$academia.course.other_info}}
+                    {{$education.course.other_info}}
                 </div>
             </div>
             {{end}}

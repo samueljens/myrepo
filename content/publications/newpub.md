@@ -1,17 +1,19 @@
 ---
-title: "Your Paper Name Goes Here"
+title: "Their Economic Pain, Our Emotional
+Gain: Can Schadenfreude Motivate Responses to Redistributive Polices?"
 authors:
-- Your Full Name
-- Another Researcher
-date: "2018-09-01"
+- H. Hannah Nam, Samuel Jens, and Yanna Krupnikov
+- Presented at APSA's 2020 Annual Meeting
+date: "2021-08-17"
 
-publication: "Journal of Machine Learning"
+
+publication: "under review"
 
 links:
-    pdf: https://github.com/hadisinaee/avicenna
-    code: https://github.com/hadisinaee/avicenna
-    slides: https://github.com/hadisinaee/avicenna
-    video: https://github.com/hadisinaee/avicenna
+    #pdf: https://github.com/hadisinaee/avicenna
+    #code: https://github.com/hadisinaee/avicenna
+    #slides: https://github.com/hadisinaee/avicenna
+    #video: https://github.com/hadisinaee/avicenna
 
 ---
 
