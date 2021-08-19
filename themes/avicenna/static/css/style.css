@@ -140,16 +140,16 @@ h2 code {
 }
 
 .publication .section-1 .publication-date {
-    font-family: 'Ubuntu Mono', serif;
+    font-family: 'Inter', serif;
 }
 
 .publication .section-1 .publication-name {
-    font-family: 'Ubuntu Mono', serif;
+    font-family: 'Inter', serif;
 }
 
 
 .publication .section-2 {
-    font-family: 'Ubuntu Mono', serif;
+    font-family: 'Inter', serif;
     margin-top: -.1%;
     margin-bottom: .5%;
 }
@@ -157,7 +157,7 @@ h2 code {
 
 .publication .section-3 {
     margin-top: -.5%;
-    font-family: 'Ubuntu Mono', serif;
+    font-family: 'Inter', serif;
     text-decoration: none;
 }
 
