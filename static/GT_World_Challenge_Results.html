@@ -1,0 +1,72 @@
+---
+title: "The Relationship between Qualifying Position and Final Position in the 2021 Fanatec GT World Challenge Europe"
+author: "Samuel Jens"
+date: "10/30/2021"
+indent: true
+output:
+  pdf_document: default
+header-includes: 
+- \usepackage{setspace}\doublespacing
+- \usepackage{indentfirst}
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Over the last year and a half, I have become interested in GT3/4 racing. It started at the onset of the pandemic when I happened upon YouTube channels (e.g., Jimmy Broadbent and Jardier) showcasing the sim(ulated) racing title Assetto Corsa Competizione by Kunos Simulazioni, an Italian gaming studio. I was amazed with how realistic the graphics looked, how visceral the sounds were, and how detailed the overall experience appeared. After learning more about the game, I also discovered the GTWorld YouTube channel which live-streamed real races from various regions around the world. The racing was exciting but so too was the chat that corresponded with the stream. It was a little community of racing fans during what was an isolating time.</p>
+<p>A common theme, both explicitly mentioned and implicitly hinted at during broadcasts, was how important qualifying was for a driver’s/team’s overall position. This sparked a research question: “How important is qualifying?” Clearly cars that start at the front of the grid have a better chance of finishing well than cars that start at the back. But how “determinant” is qualifying? What are the probabilities of finishing better than one’s starting position? Is the relationship different for short sprint races compared to long multi-hour endurance races?</p>
+<p>I thought this would be an exciting extra-curricular research project that I could develop into a blog post for my personal website. I present the data and my analyses in the sections below. There are many analyses that could be run with the collected data. As such, this blog post may be updated as I (re)consider alternatives and new questions. Thanks for reading.</p>
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>The data for this project may be found on the SRO Motorsport Group’s website (see <a href="https://www.gt-world-challenge-europe.com/results" class="uri">https://www.gt-world-challenge-europe.com/results</a>). I collected the qualifying and final results for the ten rounds held during 2021. A few of the races did not have qualifying information, so I gathered the data from GTWorld’s YouTube videos. The sprint race weekends featured two shorter races, while the endurance weekends featured one longer race (often ranging 4-24 hours). The dataset contains the qualifying position of each driver lineup – all races featured at least two drivers and a mandatory pit stop to change drivers. I also have the driver names, driver lineup category (i.e., Pro Cup, Silver Cup, or Pro-AM Cup), team names, car manufacturer and model, track, race format (i.e., sprint or endurance), race session (i.e., 1 or 2), and track. I also manually coded a variable for whether each car has a front engine or not.</p>
+<p>Overall, there were 512 observations across the ten race weekends (though many race weekends have two races so each team appears twice for a given track). However, given that I analyze motorsports, there was attrition across the 2021 season. Most of the models presented below examine the 436 complete observations (or 85.16% of the total observations) in which the team not only qualified but also finished the race.</p>
+<p>The figure below reveals the relationship between qualifying position (x-axis) and final race position (y-axis). The dashed 45* line indicates a perfect relationship. In other words, if all observations were on the line, then qualifying would perfectly predict (or determine) final race position. The different shapes denote whether the race was an endurance (circle) or sprint (triangle) race. The colors represent a specific manufacturer’s car. Excluding the two new additions for the 2022 season which appeared in the final endurance race of the season (e.g., the BMW M4 GT3 and Audi R8 LMS GT3 Evo 2), there were a total of nine manufacturers during the 2021 season. Four of the nine cars were front-engine: Aston Martin, Bentley, BMW, and Mercedes-AMG. Four were mid-engine: Audi, Ferrari, Lamborghini, and McLaren. Finally, one was rear-engine: Porsche. Even with vast differences in appearance, all GT3 cars are subject to the SRO’s balance of performance – cars are restricted in certain ways to balance them across various tracks.</p>
+<p><img src="/projects/GT_World_Challenge_Results_files/figure-html/Main%20Plot-1.png" width="672" /></p>
+<p>As can be seen in the figure, most observations are below the 45* dashed line. This means most cars finish <em>better</em> than their starting (qualifying) position. This finding is in part due to cars/teams dropping out of the races due to mechanical problems and/or crash damage. As such, 65.37% percent of the complete observations finish better than (or equivalent to) their qualifying position.</p>
+<p>The table below reveals the bivariate regression when final race position is regressed on qualifying position. As one would expect, there is a highly significant relationship between the two (<em>p</em> &lt; 0.01). However, the magnitude of the coefficient is striking. One might expect a coefficient closer to 1 rather than 0.47. This result is what illustrates the finding from the figure above. A one place increase in qualifying position only increases the final race position by 0.47 “places.” In other words, since the coefficient is less than 1, teams tend to do better in the final race compared to their qualifying position.</p>
+<p>Furthermore, the r-squared value is also intriguing. Only 35.8% of the variance in final race position can be explained by the qualifying position. I find this to be rather low - 64% of the variance in final race position remains unexplained. Qualifying clearly does not “determine” final position. There are many other important factors that influence the relationship between qualifying and final position.</p>
+<p>The bivariate results from Table 1 above suggest other variables are necessary for explaining the finishing positions during the 2021 European season. While qualifying does account for final position, a large amount of variance remains unexplained. Table 2 presents three new models with new independent variables. These variables are coded as the following:</p>
+<ul>
+<li>Endurance: 1 for an endurance race and 0 for a sprint race.</li>
+<li>Front Engine: 1 for front engine race cars (e.g., Aston Martin, Bentley, BMW, and Mercedes-AMG) and 0 otherwise (e.g., Audi, Ferrari, Lamborghini, McLaren, and Porsche). Of the 512 total observations, 204 (39.84%) were front engine vehicles while 308 (60.16%) were not.</li>
+</ul>
+<p>The second column of Table 2 shows endurance races are statistically different from sprint races (<em>p</em> &lt; 0.01) in accounting for final position when controlling for qualifying position. The positive coefficient reveals final positions in endurance races are approximately two positions <em>higher</em> (i.e., worse – higher meaning further from first place) when compared to sprint races controlling for qualifying position. In other words, the results suggest that, on average in 2021, a car qualifying 10th overall would finish a sprint race in 11th position but finish an endurance race in 13th position (when including the constant/y-intercept value in the calculations). Furthermore, the striking finding is that even with the inclusion of the binary “Endurance” variable only improves the R-squared value by one percentage point - only 36.8% of the variance in final position is explained by qualifying position and race duration.</p>
+<p>The third column in Table 2 removes the endurance variable and replaces it with whether or not a car has a front engine. Perhaps mid-engine cars are advantaged in someway and have better final positions compared to front engine cars. (This should not occur given the SRO’s balance of performance criteria, but could posit this idea.) The results show front engine cars do marginally worse by approximately one position (<em>p</em> &lt; 0.1) than non-front engine cars when controlling for qualifying position. However, like the finding above, the addition of this binary variable only improves the R-squared by 0.4 percentage points.</p>
+<p>The final column in Table 2 presents the OLS regression results when including all three variables: qualifying position, endurance vs. sprint, and front engine vs. other. All three variables have comparable coefficient sizes to the other models and their statistical significance remains at the same levels. The R-squared value reveals an increase to 37.3% of the variance in final position being explained by the three independent variables. However, nearly 63% of the variance remains unexplained.</p>
+<p>These initial results are intriguing. Qualifying position, as expected, does significantly account for drivers’ final positions. However, the relationship is not as 1:1 as one might expect. The central (and, perhaps, obvious) finding is that merely finishing a race tends to provide a team with a higher finishing position than where they started. This is in large part due to the attrition associated with motorsports. Endurance races, which produce greater attrition due to their duration, lead to stronger finishing results for entrants than sprint races. Another important finding is that front engine cars do marginally worse compared to mid- and rear-engine cars. This evidence suggests the balance of performance may need adjustment; however, there are other factors that I would like to explore in future blog posts. (An interaction model not shown reveals no statistically significant results when interacting engine type and race type.) Perhaps front engine cars are less likely to finish races compared to other car designs. Or, there are more Pro-Cup drivers in mid-engine cars compared to front engine cars. These are ideas I will explore further.</p>
+</div>
+<div id="predicted-probabilities-of-finishing-better-than-qualifying-position" class="section level2">
+<h2>Predicted Probabilities of Finishing Better than Qualifying Position</h2>
+<p>As a final exploration of the data, I look at the predicted probabilities that a car/team finishes better than they started. I create a new variable that is the qualifying position minus final position. Positive numbers reveal observations that finished better than their starting position. I recode this variable as a binary variable: 1 for any positive or zero value (i.e., finishing same position as start) or 0 for all negative values. The switch to a binary outcome variable means I model the data using logistic regression instead of a linear probability model (i.e., an OLS with a binary dependent variable). The independent variables consist of the following: front engine, endurance, and driver category. Driver category is a three level variable that characterizes the experience level of a driving lineup. It takes on the value 3 for “Pro Cup” entrants (the professional drivers), 2 for “Silver Cup” lineups, and 1 for “Pro-AM Cup” entrants. Only two observations were in the “AM Cup” category, so I dropped this observations going in the following analyses.</p>
+<p>The figures below show the predicted probabilities of finishing stronger than a car/team started. The addition to this model is that I plot the probabilities by driver category. The “Pro Cup” entrants are always the red line, the “Silver Cup” drivers are always purple, and the “Pro-AM” lineups are always blue. I complete the predicted probabilities across four models:</p>
+<ul>
+<li>Top left: Front engine cars in endurance races</li>
+<li>Top right: Non-front engine cars in endurance races</li>
+<li>Bottom left: Front engine cars in sprint races</li>
+<li>Bottom right: Non-front engine cars in sprint races</li>
+</ul>
+<p>The x-axis shows the range of possible starting (qualifying) positions and plots the probability of a 1 (doing better) on the y-axis. The 95% confidence intervals are shown in light gray. I discuss the four figures below.</p>
+<p>“Pro Cup” drivers (red line), as expected, qualify better than the other two categories. Intriguingly, across all the configurations, if a car/team starts around 40th position, there is close to a guarantee they finish better than their starting position – regardless of engine layout or race type. Looking at the top left figure, a “Pro-AM” lineup in a front engine car has a ~50% of finishing better than their qualifying position if they start in 21st position during an endurance race. This predicted probability drastically decreases across all the figures as a team qualifies closer to pole which makes sense given there are only so many places one can move up when starting further to the front of the grid.</p>
+<p>The lines are shifted left along the x-axis in the bottom plots compared to the top plots. This is evidence that endurance races are more favorable for moving up - regardless of driver category - compared to sprint races. The attrition found in endurance racing allows most teams to improve on their final position as cars/teams drop out of the race.</p>
+<p> </p>
+<p> </p>
+<p><img src="/projects/GT_World_Challenge_Results_files/figure-html/Grid%20Arrange%20Plots-1.png" width="672" /></p>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>Probability of Finishing within Top 10</p>
+<p>SELECTION MODELS</p>
+<div style="page-break-after: always;"></div>
+</div>
+<div id="links" class="section level2">
+<h2>Links</h2>
+<ul>
+<li>GT World Challenge Europe: <a href="https://www.gt-world-challenge-europe.com/results" class="uri">https://www.gt-world-challenge-europe.com/results</a></li>
+<li>Kunos Simulazioni: <a href="http://www.kunos-simulazioni.com/main/" class="uri">http://www.kunos-simulazioni.com/main/</a></li>
+<li>Assetto Corsa Competizione: <a href="https://www.assettocorsa.it/competizione/" class="uri">https://www.assettocorsa.it/competizione/</a></li>
+<li>GTWorld: <a href="https://www.youtube.com/gtworld" class="uri">https://www.youtube.com/gtworld</a></li>
+</ul>
+</div>

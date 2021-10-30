@@ -2,7 +2,7 @@
 #date: "2020-11-20T17:51:47+03:30"
 #default_news_icon: file-text
 #draft: false
-#headless: true
+#headless: false
 #news_items:
 #- date: "2023-11-20"
 #  extra_text: August 2023.
@@ -18,7 +18,7 @@
 #- date: "2020-11-20"
 #  extra_text: Software Engineering Daily Podcast, Jan. 2020.
 #  icon: youtube
-#  link: /en/talks/how-to-give-a-communicative-research-talk/
+#link: /en/talks/how-to-give-a-communicative-research-talk/
 #  text: How to give a communicative research talk?
 #- date: "2020-11-20"
 #  extra_text: Software Engineering Daily Podcast, Jan. 2020.
@@ -32,5 +32,5 @@
 #  text: How to write a good paper?
 #num_news: 5
 #show_news_icons: true
-#title: news
+#title: blog
 ---

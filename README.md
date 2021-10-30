@@ -1,6 +1,5 @@
 # myrepo
-testing my setup
+Welcome to my personal website GitHub.
 
-This is a line from RStudio
-Another line
+
 

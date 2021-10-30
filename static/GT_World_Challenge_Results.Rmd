@@ -1,0 +1,936 @@
+---
+title: "The Relationship between Qualifying Position and Final Position in the 2021 Fanatec GT World Challenge Europe"
+author: "Samuel Jens"
+date: "10/30/2021"
+indent: true
+output:
+  pdf_document: default
+header-includes: 
+- \usepackage{setspace}\doublespacing
+- \usepackage{indentfirst}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+Over the last year and a half, I have become interested in GT3/4 racing. It started at the onset of the pandemic when I happened upon YouTube channels (e.g., Jimmy Broadbent and Jardier) showcasing the sim(ulated) racing title Assetto Corsa Competizione by Kunos Simulazioni, an Italian gaming studio. I was amazed with how realistic the graphics looked, how visceral the sounds were, and how detailed the overall experience appeared. After learning more about the game, I also discovered the GTWorld YouTube channel, the official channel for the SRO Motorsport Group's racing series, which live-streamed real races from various regions around the world. The racing was exciting but so too was the chat that corresponded with the stream. It was a little community of racing fans during what was an isolating time.
+
+A common theme, both explicitly mentioned and implicitly hinted at during the broadcasts, was how important qualifying was for a driver's/team's overall position. This sparked a research question: "How important is qualifying?" Clearly cars that start at the front of the grid have a better chance of finishing well than cars that start at the back. But how "determinant" is qualifying? What are the probabilities of finishing better than one's starting position? Is the relationship different for shorter sprint races compared to long, multi-hour endurance races? 
+
+I thought this would be an exciting extracurricular research project that I could develop into a blog post for my personal website. I present the data and my analyses in the sections below. There are many analyses that could be run with the collected data. As such, this blog post may be updated as I (re)consider alternatives and new questions. Thanks for reading.
+
+## Data
+
+The data for this project may be found on the SRO Motorsport Group's website (see  <https://www.gt-world-challenge-europe.com/results>). I collect the qualifying and final results for the ten rounds held during 2021. A few of the races did not have qualifying information, so I gather the data from GTWorld's YouTube videos (which stream practice and qualifying sessions in addition to the full race). The sprint race weekends feature two shorter 1-hour races, while the endurance weekends feature one longer race (ranging 3-24 hours). The dataset contains the qualifying position of each driver lineup -- all races feature at least two drivers and a mandatory pit stop to change drivers. I also have the driver names, driver lineup category (i.e., Pro Cup, Silver Cup, or Pro-AM Cup), team names, car manufacturer and model, track, race format (i.e., sprint or endurance), race session (i.e., 1 or 2), and track. 
+
+There are a total of nine manufacturers during the 2021 season. Four of the nine manufacturers' vehicles are front engine: Aston Martin, Bentley, BMW, and Mercedes-AMG.  Four are mid-engine: Audi, Ferrari, Lamborghini, and McLaren. Finally, one is rear engine: Porsche. Even with vast differences in appearance, all GT3 specification cars are subject to the SRO's balance of performance -- cars are restricted in certain ways to balance them across various tracks.
+
+Overall, there are 512 observations across the ten race weekends (though many race weekends have two races so each team appears twice for a given track). However, given that I analyze motorsports, there is attrition across the 2021 season. Most of the models presented below examine the 436 complete observations (or 85.16% of the total observations) in which the car/team not only qualifies but also finishes the race. 
+
+
+```{r, Data, include = F, echo = F}
+library(stargazer)
+library(tidyverse)
+library(readxl)
+gt_data <- read_excel("~/Documents/Samuel Jens/Data & Research/myrepo/static/GT_World_Challenge_Results.xlsx")
+gt_data$QUAL_POS <- as.numeric(gt_data$QUAL_POS)
+gt_data$FINAL_POS <- as.numeric(gt_data$FINAL_POS)
+
+gt_data$Front_Eng <- ifelse(gt_data$CAR == "Aston Martin Vantage AMR GT3", 1,
+                            ifelse(gt_data$CAR ==  "Bentley Continental GT3", 1,
+                                   ifelse(gt_data$CAR == "BMW M6 GT3", 1,
+                                          ifelse(gt_data$CAR =="Mercedes-AMG GT3", 1, 0)))) 
+
+gt_data <- subset(gt_data, CAR != "BMW M4 GT3")
+gt_data <- subset(gt_data, CAR != "Audi R8 LMS GT3 EVO2")
+
+table(gt_data$Front_Eng)
+
+gt_data$Sprint <- ifelse(gt_data$TYPE == "Sprint", 1, 0)
+gt_data$Endurance <- ifelse(gt_data$TYPE == "Endurance", 1, 0)
+
+gt_data$Class <- ifelse(gt_data$CLASS == "AM Cup", 0,
+                        ifelse(gt_data$CLASS == "Pro-AM Cup", 1,
+                               ifelse(gt_data$CLASS == "Silver Cup", 2,
+                                      ifelse(gt_data$CLASS == "Pro Cup", 3, NA))))
+
+gt_data$Class2 <- ifelse(gt_data$CLASS == "Pro-Am Cup", 1, gt_data$Class)
+
+
+gt_data$Difference <- gt_data$QUAL_POS - gt_data$FINAL_POS
+plot(density(gt_data$Difference, na.rm = T))
+gt_data$Difference2 <- ifelse(gt_data$Difference <= 0, 0, 1)
+table(gt_data$Difference2)
+
+
+ols1 <- lm(FINAL_POS ~ QUAL_POS, data = gt_data)
+
+plot(gt_data$QUAL_POS, gt_data$FINAL_POS)
+abline(ols1, col = "red")
+abline(coef = c(0,1), col = "magenta")
+```
+
+
+The figure below reveals the relationship between qualifying position (x-axis) and final race position (y-axis). The dashed 45* line indicates a perfect relationship. In other words, if all observations were on the line, then qualifying would perfectly predict (or determine) final race position. The different shapes denote whether the race was an endurance (circle) or sprint (triangle) race. The colors represent a specific manufacturer's car. I excluded the two new updated vehicles for the 2022 season which appeared in the final endurance race of the season (e.g., the BMW M4 GT3 and Audi R8 LMS GT3 Evo 2). 
+
+
+```{r, Main Plot, include = T, echo = F, warning = F}
+library(ggplot2)
+ggplot(gt_data, aes(x = QUAL_POS, y = FINAL_POS, colour = CAR, shape = TYPE)) +
+  geom_point(size = 2.5, alpha = 0.75) + theme_classic() + 
+  labs(title = "Fanatec GT World Challenge Europe (2021):\nRelationship between Qualifying and Final Positions",
+       x = "Qualifying Position", y = "Final Race Position") +
+  theme(plot.title = element_text(hjust = 0.5)) + labs(colour = "Car") + labs(shape = "Race Format") +
+  geom_abline(intercept = 0, slope = 1, size = 0.5, linetype = "dashed") + ylim(0,45)
+```
+
+There appears to be a positive relationship that follows the dashed line, but there is also considerable variability suggesting qualifying is not as important as some may contend. Furthermore, most observations are below the 45* dashed line. This means most cars finished *better* than their starting (qualifying) position. This finding is in part due to cars/teams dropping out of the races due to mechanical problems and/or crash damage. As such, 65.37% percent of the complete observations finish better than (or equivalent to) their qualifying position. I turn to statistical models to evaluate this relationship in the next section. 
+
+
+```{r, GT Race Analyses, include = F, echo = F}
+#summary(lm(FINAL_POS ~ QUAL_POS, data = gt_data))
+stargazer(ols1, title = "Bivariate Regression", dep.var.labels = c("Final Position"), covariate.labels = c("Qualifying Position"), type = "latex")
+ols2 <-  lm(FINAL_POS ~ QUAL_POS + Endurance, data = gt_data)
+stargazer(ols2, title = "Regression Results", dep.var.labels=c("Final Position"), covariate.labels=c("Qualifying Position","Endurance"), type = "latex")
+
+ols2 <-  lm(FINAL_POS ~ QUAL_POS + Endurance, data = gt_data)
+ols3 <-  lm(FINAL_POS ~ QUAL_POS + Front_Eng, data = gt_data)
+ols4 <-  lm(FINAL_POS ~ QUAL_POS + Endurance + Front_Eng, data = gt_data)
+
+stargazer(ols2, ols3, ols4, title = "Results", dep.var.labels = c("Final Position"),
+          covariate.labels = c("Qualifying Position","Endurance","Front Engine"),
+          type = "latex")
+ols5 <- lm(FINAL_POS ~ QUAL_POS + Endurance + Front_Eng + Class2, data = gt_data)
+
+ols6 <- lm(FINAL_POS ~ QUAL_POS + Endurance*Front_Eng, data = gt_data)
+
+# Robust SEs
+library(lmtest)
+library(sandwich)
+coeftest(ols1,  vcov = vcovHC(ols1, "HC1"))
+coeftest(ols2,  vcov = vcovHC(ols2, "HC1"))
+coeftest(ols3,  vcov = vcovHC(ols3, "HC1"))
+coeftest(ols4,  vcov = vcovHC(ols4, "HC1"))
+
+## Subset by qualifying >10 
+
+gt_data_sub1 <- subset(gt_data, QUAL_POS > 10)
+gt_data_sub1$Range <- gt_data_sub1$QUAL_POS - gt_data_sub1$FINAL_POS
+
+ggplot(gt_data_sub1, aes(Range)) + 
+  geom_histogram(binwidth = 1, color = "darkgreen", fill = "grey", size = .5) +
+  geom_point(aes(y = -1.5), position = position_jitter(height = 0.8), size = 1) + theme_classic() +
+  labs(title = "Position Range (Qualifying - Final)", x = "Range", y = "Frequency") +
+  theme(plot.title = element_text(hjust = 0.5)) + geom_vline(xintercept = 0, linetype = "dotted")
+
+
+summary(lm(Range ~ Sprint + Front_Eng, data = gt_data_sub1))
+```
+
+## Regression Models 
+
+The table below reveals the Ordinary Least Squares (OLS) bivariate regression when final race position is regressed on qualifying position. As one would expect, there is a highly significant relationship between the two (*p* < 0.01). However, the magnitude of the coefficient is striking. One might expect a coefficient closer to 1 rather than 0.47. This result illustrates the finding from the figure above. A one place increase in qualifying position only increases the final race position by 0.47 "places." In other words, since the coefficient is less than 1, teams tend to do better in the final race compared to their qualifying position. 
+
+Furthermore, the R-squared value is also intriguing. Only 35.8% of the variance in final race position can be explained by the qualifying position. I find this to be rather low -- 64% of the variance in final race position remains unexplained. Qualifying clearly does not "determine" final position. There are many other important factors that influence the relationship between qualifying and final position. 
+
+\begin{table}[!htbp] \centering 
+  \caption{Bivariate OLS Regression with Robust Standard Errors} 
+  \label{} 
+\begin{tabular}{@{\extracolsep{5pt}}lc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & \multicolumn{1}{c}{\textit{Dependent variable:}} \\ 
+\cline{2-2} 
+\\[-1.8ex] & Final Position \\ 
+\hline \\[-1.8ex] 
+ Qualifying Position & 0.470$^{***}$ \\ 
+  & (0.037) \\ 
+  & \\ 
+ Constant & 7.141$^{***}$ \\ 
+  & (0.813) \\ 
+  & \\ 
+\hline \\[-1.8ex] 
+Observations & 436 \\ 
+R$^{2}$ & 0.358 \\ 
+Adjusted R$^{2}$ & 0.356 \\ 
+Residual Std. Error & 7.727 (df = 434) \\ 
+F Statistic & 241.626$^{***}$ (df = 1; 434) \\ 
+\hline 
+\hline \\[-1.8ex] 
+\textit{Note: Robust SEs in parentheses}  & \multicolumn{1}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+\end{tabular} 
+\end{table} 
+
+
+The bivariate results from Table 1 above suggest other variables are necessary for explaining the finishing positions during the 2021 European season. While qualifying does account for final position, a large amount of variance remains unexplained. Table 2 presents three new models with new independent variables. These variables are coded as the following:
+
+* Endurance: 1 for an endurance race and 0 for a sprint race.
+* Front Engine: 1 for front engine race cars (e.g., Aston Martin, Bentley, BMW, and Mercedes-AMG) and 0 otherwise (e.g., Audi, Ferrari, Lamborghini, McLaren, and Porsche). Of the 512 total observations, 204 (39.84%) are front engine cars while 308 (60.16%) are not.
+
+
+\begin{table}[!htbp] \centering 
+  \caption{OLS Regression Results with Robust Standard Errors} 
+  \label{} 
+\begin{tabular}{@{\extracolsep{5pt}}lccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & \multicolumn{3}{c}{\textit{Dependent variable:}} \\ 
+\cline{2-4} 
+\\[-1.8ex] & \multicolumn{3}{c}{Final Position} \\ 
+\\[-1.8ex] & (1) & (2) & (3)\\ 
+\hline \\[-1.8ex] 
+ Qualifying Position & 0.437$^{***}$ & 0.473$^{***}$ & 0.440$^{***}$ \\ 
+  & (0.042) & (0.036) & (0.042) \\ 
+  & & & \\ 
+ Endurance & 2.116$^{**}$ &  & 2.128$^{**}$ \\ 
+  & (0.949) &  & (0.947) \\ 
+  & & & \\ 
+ Front Engine &  & 1.369$^{*}$ & 1.385$^{*}$ \\ 
+  &  & (0.730) & (0.722) \\ 
+  & & & \\ 
+ Constant & 6.848$^{***}$ & 6.535$^{***}$ & 6.232$^{***}$ \\ 
+  & (0.756) & (0.886) & (0.822) \\ 
+  & & & \\ 
+\hline \\[-1.8ex] 
+Observations & 436 & 436 & 436 \\ 
+R$^{2}$ & 0.368 & 0.362 & 0.373 \\ 
+Adjusted R$^{2}$ & 0.365 & 0.359 & 0.368 \\ 
+Residual Std. Error & 7.675 (df = 433) & 7.707 (df = 433) & 7.654 (df = 432) \\ 
+F Statistic & 125.909$^{***}$ (df = 2; 433) & 123.075$^{***}$ (df = 2; 433) & 85.531$^{***}$ (df = 3; 432) \\ 
+\hline 
+\hline \\[-1.8ex] 
+\textit{Note: Robust SEs in parentheses}  & \multicolumn{3}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+\end{tabular} 
+\end{table} 
+
+
+The second column of Table 2 shows endurance races are statistically different from sprint races (*p* < 0.01) in accounting for final position when controlling for qualifying position. The positive coefficient reveals final positions in endurance races are approximately two positions *higher* (i.e., worse -- higher meaning further from first place) when compared to sprint races and controlling for qualifying position. In other words, the results suggest that, on average in 2021, a car qualifying 10th overall would finish a sprint race in 11th position but finish an endurance race in 13th position (when including the constant/y-intercept value in the calculations). If I disregard the constant value (which is meaningless -- one cannot qualify in "zero"-th place), then qualifying in 10th would produce, on average, a 6th position finish in an endurance race and a 4th position finish in a sprint race. Furthermore, the striking finding is that even with the inclusion of the binary "Endurance" variable only improves the R-squared value by one percentage point -- only 36.8% of the variance in final position is explained by qualifying position and race duration.
+
+The third column in Table 2 removes the endurance variable and replaces it with whether or not a car has a front engine. Perhaps mid-engine cars are advantaged in someway and have better final positions compared to front engine cars. (This should not occur given the SRO's balance of performance criteria, but one could posit this idea.) The results show front engine cars do *marginally* worse by approximately one position (*p* < 0.1) than non-front engine cars when controlling for qualifying position. However, like the finding above, the addition of this binary variable only improves the R-squared by 0.4 percentage points. 
+
+The final column in Table 2 presents the OLS regression results when including all three variables: qualifying position, endurance vs. sprint, and front engine vs. other. All three variables have comparable coefficient sizes to the other models and their statistical significance remains at the same levels. The R-squared value reveals an increase to 37.3% of the variance in final position being explained by the three independent variables. However, nearly 63% of the variance remains unexplained. 
+
+These initial results are intriguing. Qualifying position, as expected, does significantly account for drivers' final positions. Yet, the relationship is not as 1:1 as one might expect. The central (and, perhaps, obvious) finding is that merely finishing a race tends to provide a team with a higher finishing position than where they started. This is in large part due to the attrition associated with motorsports.
+
+However, endurance races, which produce greater attrition due to their duration, surprisingly lead to worse finishing results for entrants than sprint races when controlling for qualifying position. Another important finding is that front engine cars do marginally worse compared to mid- and rear engine cars. This evidence suggests the balance of performance may need adjustment; however, there are other factors that I would like to explore in future blog posts befome I stake this claim. (An interaction model not shown reveals no statistically significant results when interacting engine type and race format.) Perhaps front engine cars are less likely to finish races compared to other car designs. Or, there are more Pro-Cup drivers in mid-engine cars compared to front engine cars. These are ideas I will explore further. 
+
+## Predicted Probabilities of Finishing Better than Qualifying Position
+
+As a final exploration of the data, I look at the predicted probabilities that a car/team finishes better than they started. I create a new variable that is the qualifying position minus final position. Positive numbers reveal observations that finish better than their starting position. I recode this variable as a binary variable: 1 for any positive or zero value (i.e., finishing same position as start) or 0 for all negative values. The switch to a binary outcome variable means I model the data using logistic regression instead of a linear probability model (i.e., an OLS model with a binary dependent variable). The independent variables consist of the following: front engine, endurance, and driver category. Driver category is a three level variable that characterizes the experience level of a driving lineup. It takes on the value 3 for "Pro Cup" entrants (the professional drivers), 2 for "Silver Cup" (aspiring professionals) lineups, and 1 for "Pro-AM Cup" (professional and amateur combination) entrants. Only two observations were in the "AM Cup" category, so I dropped this observations going in the following analyses. 
+
+The figures below show the predicted probabilities of finishing stronger than a car/team started. The addition to this model is that I plot the probabilities by driver category. The "Pro Cup" entrants are always the red line, the "Silver Cup" drivers are always purple, and the "Pro-AM" lineups are always blue. I complete the predicted probabilities across four models:
+
+* Top left: Front engine cars in endurance races
+* Top right: Non-front engine cars in endurance races
+* Bottom left: Front engine cars in sprint races
+* Bottom right: Non-front engine cars in sprint races
+
+The x-axis shows the range of possible starting (qualifying) positions and plots the probability of a 1 (i.e., doing better) on the y-axis. The 95% confidence intervals are shown in light gray. I discuss the four figures below.
+
+"Pro Cup" drivers (red line), as expected, qualify better than the other two categories. And "Silver Cup" drivers tend to qualify better than "Pro-AM" lineups. Intriguingly, across all the configurations, if a car/team starts around 40th position, there is close to a guarantee they finish better than their starting position -- regardless of engine layout or race format. Looking at the top left figure, a "Pro-AM" lineup in a front engine car has a ~50% chance of finishing better than their qualifying position if they start in 22nd position during an endurance race. This predicted probability drastically decreases across all the figures as a team qualifies closer to pole which makes sense given there are only so many places one can move up when starting further to the front of the grid. 
+
+Another illustrative example can be done with the top right plot (but extends to all plots). If we take 20th as the starting position, then "Pro-AM" teams have a ~35% probability of improving on their position. "Silver Cup" lineups, on the other hand, have a ~60% probability of improving. Finally, "Pro Cup" contenders have an ~80% probability of improving. The same type of relationship can be extended to all the other plots. For a given qualifying position, more experienced driver lineups tend to do better than less experienced teams. 
+
+&nbsp;
+
+```{r, Logit Models and Plot Code, include = F, echo = F, warning = F}
+logit1 <- glm(Difference2 ~ QUAL_POS + Front_Eng + Endurance, 
+              data = gt_data, family = binomial(link = "logit"))
+summary(logit1)
+```
+
+```{r, Driver Class Code and Plots, include = F, echo = F, warning = F}
+## Only 2 AM observations - remove due to low count
+gt_data2 <- subset(gt_data, Class2 != 0)
+
+hist(gt_data2$Class2)
+
+logit2 <- glm(Difference2 ~ QUAL_POS + Front_Eng + Endurance + Class2, 
+              data = gt_data2, family = binomial(link = "logit"))
+summary(logit2)
+
+
+a3 <- expand.grid(
+  QUAL_POS = seq(from = min(gt_data2$QUAL_POS, na.rm = T), to = max(gt_data2$QUAL_POS, na.rm = T), by = 0.01),
+  Front_Eng = 1,
+  Endurance = 1,
+  Class2 = 3
+)
+# Front Engine, Endurance, Pro
+a3$Prediction <- predict(logit2, a3, type = "link")
+a3$SE <- predict(logit2, a3,
+                      type = "link",
+                      se.fit = T)$se.fit
+
+a3$LoCI <- a3$Prediction - 1.96 * a3$SE
+a3$HiCI <- a3$Prediction + 1.96 * a3$SE
+
+a3$prob.Prediction <- plogis(a3$Prediction)
+a3$prob.LoCI <- plogis(a3$LoCI)
+a3$prob.HiCI <- plogis(a3$HiCI)
+
+# Front Engine, Endurance, Silver Cup
+a2 <- expand.grid(
+  QUAL_POS = seq(from = min(gt_data2$QUAL_POS, na.rm = T), to = max(gt_data2$QUAL_POS, na.rm = T), by = 0.01),
+  Front_Eng = 1,
+  Endurance = 1,
+  Class2 = 2
+)
+
+a2$Prediction <- predict(logit2, a2, type = "link")
+a2$SE <- predict(logit2, a2,
+                      type = "link",
+                      se.fit = T)$se.fit
+
+a2$LoCI <- a2$Prediction - 1.96 * a2$SE
+a2$HiCI <- a2$Prediction + 1.96 * a2$SE
+
+a2$prob.Prediction <- plogis(a2$Prediction)
+a2$prob.LoCI <- plogis(a2$LoCI)
+a2$prob.HiCI <- plogis(a2$HiCI)
+
+# Front Engine, Endurance, Pro-AM
+a1 <- expand.grid(
+  QUAL_POS = seq(from = min(gt_data2$QUAL_POS, na.rm = T), to = max(gt_data2$QUAL_POS, na.rm = T), by = 0.01),
+  Front_Eng = 1,
+  Endurance = 1,
+  Class2 = 1
+)
+
+a1$Prediction <- predict(logit2, a1, type = "link")
+a1$SE <- predict(logit2, a1,
+                      type = "link",
+                      se.fit = T)$se.fit
+
+a1$LoCI <- a1$Prediction - 1.96 * a1$SE
+a1$HiCI <- a1$Prediction + 1.96 * a1$SE
+
+a1$prob.Prediction <- plogis(a1$Prediction)
+a1$prob.LoCI <- plogis(a1$LoCI)
+a1$prob.HiCI <- plogis(a1$HiCI)
+
+```
+
+```{r, CI Plots, include = F, echo = F, warning = F}
+a3_plot <- ggplot(a3,
+       aes(x = QUAL_POS,
+           y = prob.Prediction)) +
+  geom_smooth(aes(ymin = prob.LoCI,
+                  ymax = prob.HiCI),
+              stat = "identity") + theme_bw() +
+  xlab("Qualifying Position") + ylab("Pr(Finishing Better than Qualifying)")
+
+a2_plot <- ggplot(a2,
+       aes(x = QUAL_POS,
+           y = prob.Prediction)) +
+  geom_smooth(aes(ymin = prob.LoCI,
+                  ymax = prob.HiCI),
+              stat = "identity") + theme_bw() +
+  xlab("Qualifying Position") + ylab("Pr(Finishing Better than Qualifying)")
+
+a1_plot <- ggplot(a1,
+       aes(x = QUAL_POS,
+           y = prob.Prediction)) +
+  geom_smooth(aes(ymin = prob.LoCI,
+                  ymax = prob.HiCI),
+              stat = "identity") + theme_bw() +
+  xlab("Qualifying Position") + ylab("Pr(Finishing Better than Qualifying)")
+
+
+main_a <- merge(a3, a2,
+                by = "QUAL_POS") %>%
+  merge(a1, 
+      by = "QUAL_POS")
+
+a_plot <- ggplot(main_a, aes(x = QUAL_POS)) +
+  geom_line(aes(y = prob.Prediction.x), color = "red") +
+  geom_ribbon(data = main_a, aes(ymin = prob.LoCI.x,
+                  ymax = prob.HiCI.x),
+              stat = "identity", alpha = 0.3) +
+  geom_line(aes(y = prob.Prediction.y), color = "purple") +
+  geom_ribbon(data = main_a, aes(ymin = prob.LoCI.y,
+                  ymax = prob.HiCI.y),
+              stat = "identity", alpha = 0.3) + 
+ geom_line(aes(y = prob.Prediction), color = "blue") +
+  geom_ribbon(data = main_a, aes(ymin = prob.LoCI,
+                  ymax = prob.HiCI),
+              stat = "identity", alpha = 0.3) + 
+  geom_hline(yintercept = 0.50, linetype="dashed") + theme_classic() +
+  xlab("Qualifying Position") + ylab("Pr(Fin. Pos. < Qual. Pos.)") +
+  labs(title = "Front Engine - Endurance") + theme(plot.title = element_text(hjust = 0.5)) +
+  theme(text = element_text(size = 8))
+  #scale_colour_manual("Legend",
+  #                   breaks = c("Pro","Silver","Pro-AM"),
+  #                   values = c("red","purple","blue")) 
+
+```
+
+```{r, Non-Front Engine - Endurance, include = F, echo = F, warning = F}
+b3 <- expand.grid(
+  QUAL_POS = seq(from = min(gt_data2$QUAL_POS, na.rm = T), to = max(gt_data2$QUAL_POS, na.rm = T), by = 0.01),
+  Front_Eng = 0,
+  Endurance = 1,
+  Class2 = 3
+)
+# Front Engine, Endurance, Pro
+b3$Prediction <- predict(logit2, b3, type = "link")
+b3$SE <- predict(logit2, b3,
+                      type = "link",
+                      se.fit = T)$se.fit
+
+b3$LoCI <- b3$Prediction - 1.96 * b3$SE
+b3$HiCI <- b3$Prediction + 1.96 * b3$SE
+
+b3$prob.Prediction <- plogis(b3$Prediction)
+b3$prob.LoCI <- plogis(b3$LoCI)
+b3$prob.HiCI <- plogis(b3$HiCI)
+
+# Front Engine, Endurance, Silver Cup
+b2 <- expand.grid(
+  QUAL_POS = seq(from = min(gt_data2$QUAL_POS, na.rm = T), to = max(gt_data2$QUAL_POS, na.rm = T), by = 0.01),
+  Front_Eng = 0,
+  Endurance = 1,
+  Class2 = 2
+)
+
+b2$Prediction <- predict(logit2, b2, type = "link")
+b2$SE <- predict(logit2, b2,
+                      type = "link",
+                      se.fit = T)$se.fit
+
+b2$LoCI <- b2$Prediction - 1.96 * b2$SE
+b2$HiCI <- b2$Prediction + 1.96 * b2$SE
+
+b2$prob.Prediction <- plogis(b2$Prediction)
+b2$prob.LoCI <- plogis(b2$LoCI)
+b2$prob.HiCI <- plogis(b2$HiCI)
+
+# Front Engine, Endurance, Pro-AM
+b1 <- expand.grid(
+  QUAL_POS = seq(from = min(gt_data2$QUAL_POS, na.rm = T), to = max(gt_data2$QUAL_POS, na.rm = T), by = 0.01),
+  Front_Eng = 1,
+  Endurance = 1,
+  Class2 = 1
+)
+
+b1$Prediction <- predict(logit2, b1, type = "link")
+b1$SE <- predict(logit2, b1,
+                      type = "link",
+                      se.fit = T)$se.fit
+
+b1$LoCI <- b1$Prediction - 1.96 * b1$SE
+b1$HiCI <- b1$Prediction + 1.96 * b1$SE
+
+b1$prob.Prediction <- plogis(b1$Prediction)
+b1$prob.LoCI <- plogis(b1$LoCI)
+b1$prob.HiCI <- plogis(b1$HiCI)
+
+```
+
+```{r, B CI Plots, include = F, echo = F, warning = F}
+
+main_b <- merge(b3, b2,
+                by = "QUAL_POS") %>%
+  merge(b1, 
+      by = "QUAL_POS")
+
+b_plot <- ggplot(main_b, aes(x = QUAL_POS)) +
+  geom_line(aes(y = prob.Prediction.x), color = "red") +
+  geom_ribbon(data = main_b, aes(ymin = prob.LoCI.x,
+                  ymax = prob.HiCI.x),
+              stat = "identity", alpha = 0.3) +
+  geom_line(aes(y = prob.Prediction.y), color = "purple") +
+  geom_ribbon(data = main_b, aes(ymin = prob.LoCI.y,
+                  ymax = prob.HiCI.y),
+              stat = "identity", alpha = 0.3) + 
+ geom_line(aes(y = prob.Prediction), color = "blue") +
+  geom_ribbon(data = main_b, aes(ymin = prob.LoCI,
+                  ymax = prob.HiCI),
+              stat = "identity", alpha = 0.3) + 
+  geom_hline(yintercept = 0.50, linetype="dashed") + theme_classic() +
+  xlab("Qualifying Position") + theme(axis.title.y = element_blank()) +
+  labs(title = "Non-Front Engine - Endurance") + theme(plot.title = element_text(hjust = 0.5)) +
+  theme(text = element_text(size = 8))
+
+```
+
+```{r, Front Engine - Sprint, include = F, echo = F, warning = F}
+c3 <- expand.grid(
+  QUAL_POS = seq(from = min(gt_data2$QUAL_POS, na.rm = T), to = max(gt_data2$QUAL_POS, na.rm = T), by = 0.01),
+  Front_Eng = 1,
+  Endurance = 0,
+  Class2 = 3
+)
+# Front Engine, Endurance, Pro
+c3$Prediction <- predict(logit2, c3, type = "link")
+c3$SE <- predict(logit2, c3,
+                      type = "link",
+                      se.fit = T)$se.fit
+
+c3$LoCI <- c3$Prediction - 1.96 * c3$SE
+c3$HiCI <- c3$Prediction + 1.96 * c3$SE
+
+c3$prob.Prediction <- plogis(c3$Prediction)
+c3$prob.LoCI <- plogis(c3$LoCI)
+c3$prob.HiCI <- plogis(c3$HiCI)
+
+# Front Engine, Endurance, Silver Cup
+c2 <- expand.grid(
+  QUAL_POS = seq(from = min(gt_data2$QUAL_POS, na.rm = T), to = max(gt_data2$QUAL_POS, na.rm = T), by = 0.01),
+  Front_Eng = 1,
+  Endurance = 0,
+  Class2 = 2
+)
+
+c2$Prediction <- predict(logit2, c2, type = "link")
+c2$SE <- predict(logit2, c2,
+                      type = "link",
+                      se.fit = T)$se.fit
+
+c2$LoCI <- c2$Prediction - 1.96 * c2$SE
+c2$HiCI <- c2$Prediction + 1.96 * c2$SE
+
+c2$prob.Prediction <- plogis(c2$Prediction)
+c2$prob.LoCI <- plogis(c2$LoCI)
+c2$prob.HiCI <- plogis(c2$HiCI)
+
+# Front Engine, Endurance, Pro-AM
+c1 <- expand.grid(
+  QUAL_POS = seq(from = min(gt_data2$QUAL_POS, na.rm = T), to = max(gt_data2$QUAL_POS, na.rm = T), by = 0.01),
+  Front_Eng = 1,
+  Endurance = 0,
+  Class2 = 1
+)
+
+c1$Prediction <- predict(logit2, c1, type = "link")
+c1$SE <- predict(logit2, c1,
+                      type = "link",
+                      se.fit = T)$se.fit
+
+c1$LoCI <- c1$Prediction - 1.96 * c1$SE
+c1$HiCI <- c1$Prediction + 1.96 * c1$SE
+
+c1$prob.Prediction <- plogis(c1$Prediction)
+c1$prob.LoCI <- plogis(c1$LoCI)
+c1$prob.HiCI <- plogis(c1$HiCI)
+
+```
+
+```{r, C CI Plots, include = F, echo = F, warning = F}
+ c3_plot <- ggplot(c3,
+       aes(x = QUAL_POS,
+           y = prob.Prediction)) +
+  geom_smooth(aes(ymin = prob.LoCI,
+                  ymax = prob.HiCI),
+              stat = "identity") + theme_bw() +
+  xlab("Qualifying Position") + ylab("Pr(Finishing Better than Qualifying)")
+
+ c2_plot <- ggplot(c2,
+       aes(x = QUAL_POS,
+           y = prob.Prediction)) +
+  geom_smooth(aes(ymin = prob.LoCI,
+                  ymax = prob.HiCI),
+              stat = "identity") + theme_bw() +
+  xlab("Qualifying Position") + ylab("Pr(Finishing Better than Qualifying)")
+
+c1_plot <- ggplot(c1,
+       aes(x = QUAL_POS,
+           y = prob.Prediction)) +
+  geom_smooth(aes(ymin = prob.LoCI,
+                  ymax = prob.HiCI),
+              stat = "identity") + theme_bw() +
+  xlab("Qualifying Position") + ylab("Pr(Finishing Better than Qualifying)")
+
+
+main_c <- merge(c3, c2,
+                by = "QUAL_POS") %>%
+  merge(c1, 
+      by = "QUAL_POS")
+
+c_plot <- ggplot(main_c, aes(x = QUAL_POS)) +
+  geom_line(aes(y = prob.Prediction.x), color = "red") +
+  geom_ribbon(data = main_c, aes(ymin = prob.LoCI.x,
+                  ymax = prob.HiCI.x),
+              stat = "identity", alpha = 0.3) +
+  geom_line(aes(y = prob.Prediction.y), color = "purple") +
+  geom_ribbon(data = main_c, aes(ymin = prob.LoCI.y,
+                  ymax = prob.HiCI.y),
+              stat = "identity", alpha = 0.3) + 
+ geom_line(aes(y = prob.Prediction), color = "blue") +
+  geom_ribbon(data = main_c, aes(ymin = prob.LoCI,
+                  ymax = prob.HiCI),
+              stat = "identity", alpha = 0.3) + 
+  geom_hline(yintercept = 0.50, linetype="dashed") + theme_classic() +
+  xlab("Qualifying Position") + ylab("Pr(Fin. Pos. < Qual. Pos.)") +
+  labs(title = "Front Engine - Sprint") + theme(plot.title = element_text(hjust = 0.5)) +
+  theme(text = element_text(size = 8))
+
+```
+
+```{r, Non-Front Engine - Sprint, include = F, echo = F, warning = F}
+d3 <- expand.grid(
+  QUAL_POS = seq(from = min(gt_data2$QUAL_POS, na.rm = T), to = max(gt_data2$QUAL_POS, na.rm = T), by = 0.01),
+  Front_Eng = 0,
+  Endurance = 0,
+  Class2 = 3
+)
+# Front Engine, Endurance, Pro
+d3$Prediction <- predict(logit2, d3, type = "link")
+d3$SE <- predict(logit2, d3,
+                      type = "link",
+                      se.fit = T)$se.fit
+
+d3$LoCI <- d3$Prediction - 1.96 * d3$SE
+d3$HiCI <- d3$Prediction + 1.96 * d3$SE
+
+d3$prob.Prediction <- plogis(d3$Prediction)
+d3$prob.LoCI <- plogis(d3$LoCI)
+d3$prob.HiCI <- plogis(d3$HiCI)
+
+# Front Engine, Endurance, Silver Cup
+d2 <- expand.grid(
+  QUAL_POS = seq(from = min(gt_data2$QUAL_POS, na.rm = T), to = max(gt_data2$QUAL_POS, na.rm = T), by = 0.01),
+  Front_Eng = 0,
+  Endurance = 0,
+  Class2 = 2
+)
+
+d2$Prediction <- predict(logit2, d2, type = "link")
+d2$SE <- predict(logit2, d2,
+                      type = "link",
+                      se.fit = T)$se.fit
+
+d2$LoCI <- d2$Prediction - 1.96 * d2$SE
+d2$HiCI <- d2$Prediction + 1.96 * d2$SE
+
+d2$prob.Prediction <- plogis(d2$Prediction)
+d2$prob.LoCI <- plogis(d2$LoCI)
+d2$prob.HiCI <- plogis(d2$HiCI)
+
+# Front Engine, Endurance, Pro-AM
+d1 <- expand.grid(
+  QUAL_POS = seq(from = min(gt_data2$QUAL_POS, na.rm = T), to = max(gt_data2$QUAL_POS, na.rm = T), by = 0.01),
+  Front_Eng = 0,
+  Endurance = 0,
+  Class2 = 1
+)
+
+d1$Prediction <- predict(logit2, d1, type = "link")
+d1$SE <- predict(logit2, d1,
+                      type = "link",
+                      se.fit = T)$se.fit
+
+d1$LoCI <- d1$Prediction - 1.96 * d1$SE
+d1$HiCI <- d1$Prediction + 1.96 * d1$SE
+
+d1$prob.Prediction <- plogis(d1$Prediction)
+d1$prob.LoCI <- plogis(d1$LoCI)
+d1$prob.HiCI <- plogis(d1$HiCI)
+
+
+```
+
+```{r, D Plots, include = F, echo = F, warning = F}
+
+
+main_d <- merge(d3, d2,
+                by = "QUAL_POS") %>%
+  merge(d1, 
+      by = "QUAL_POS")
+
+d_plot <- ggplot(main_d, aes(x = QUAL_POS)) +
+  geom_line(aes(y = prob.Prediction.x), color = "red") +
+  geom_ribbon(data = main_d, aes(ymin = prob.LoCI.x,
+                  ymax = prob.HiCI.x),
+              stat = "identity", alpha = 0.3) +
+  geom_line(aes(y = prob.Prediction.y), color = "purple") +
+  geom_ribbon(data = main_d, aes(ymin = prob.LoCI.y,
+                  ymax = prob.HiCI.y),
+              stat = "identity", alpha = 0.3) + 
+ geom_line(aes(y = prob.Prediction), color = "blue") +
+  geom_ribbon(data = main_d, aes(ymin = prob.LoCI,
+                  ymax = prob.HiCI),
+              stat = "identity", alpha = 0.3) + 
+  geom_hline(yintercept = 0.50, linetype="dashed") + theme_classic() +
+  xlab("Qualifying Position") + theme(axis.title.y = element_blank()) +
+  labs(title = "Non-Front Engine - Sprint") + theme(plot.title = element_text(hjust = 0.5)) +
+  theme(text = element_text(size = 8))
+
+```
+
+```{r, Grid Arrange Plots, include = T, echo = F, warning = F}
+
+gridExtra::grid.arrange(a_plot, b_plot, c_plot, d_plot, ncol = 2)
+
+
+```
+
+Finally, the lines are shifted left along the x-axis in the bottom plots compared to the top plots. This is evidence that sprint races are more favorable for moving up - regardless of driver category - compared to endurance races. This is, admittedly, a surprising finding since one expects longer races to allow teams to improve on their initial position. I will explore this finding in more detail in a future blog post. 
+
+## Conclusion
+
+I have many other interesting research questions on this topic. My next steps will be to look at how likely a team is to reach the Top 10 and the Top 3 if they start outside of those thresholds. I will also model these data with a Heckman selection model to account for the fact that nearly 15% of the observations are dropped due to attrition. Perhaps certain factors like race format and car manufacturer affects the likelihood a team finishes a race. I would also like to collect data from the previous years of the GT World Challenge Europe as well as its other regions (America, Asia, Australia, and Intercontinental). There are many exciting possibilities. 
+
+The results from this project follow my preconceived notions to some degree but go against them in others. Yes, qualifying matters. However, it is from determining final race position. Contrary to my expectations, though, is the finding that endurance races do not provide teams with a better finishing position compared to sprint races. The panel of plots shows that driver category matters for final positions, but qualifying at the end of the grid is not necessarily where a team will finish if they are consistent and finish the race.
+
+Thank you for reading, and thank you for any feedback and opinions. I look forward to my next blog post. :)
+
+
+\newpage
+## Links
+* GT World Challenge Europe: <https://www.gt-world-challenge-europe.com/results>
+* Kunos Simulazioni: <http://www.kunos-simulazioni.com/main/>
+* Assetto Corsa Competizione: <https://www.assettocorsa.it/competizione/>
+* GTWorld: <https://www.youtube.com/gtworld>
+
+
+```{r, EXTRA CODE, include = F, echo = F, warning = F}
+# PLOT: Front engine, endurance
+b0 <- logit1$coef[1]
+X1 <- logit1$coef[2] # Qual position
+X2 <- logit1$coef[3] # Front engine
+X3 <- logit1$coef[4] # Endurance
+
+X1_range <- seq(from = min(gt_data$QUAL_POS, na.rm = T), to = max(gt_data$QUAL_POS, na.rm = T), by = 0.01)
+
+X2_val_f <- 1  # Front engine # mean(gt_data$Front_Eng) # Average of front_eng
+X2_val_nf <- 0 # Not front engine
+X3_val_e <- 1 # Endurance
+X3_val_s <- 0 # Sprint
+
+a_logits <- b0 + X1*X1_range + X2*X2_val_f + X3*X3_val_e # Front engine, endurance
+
+b_logits <- b0 + X1*X1_range + X2*X2_val_f + X3*X3_val_s # Front engine, sprint
+
+c_logits <- b0 + X1*X1_range + X2*X2_val_nf + X3*X3_val_e # Not front engine, endurance
+
+d_logits <- b0 + X1*X1_range + X2*X2_val_nf + X3*X3_val_s # Not front engine, sprint
+
+# Compute probabilities (exponentiate logged odds)
+a_probs <- exp(a_logits)/(1 + exp(a_logits))
+b_probs <- exp(b_logits)/(1 + exp(b_logits))
+c_probs <- exp(c_logits)/(1 + exp(c_logits))
+d_probs <- exp(d_logits)/(1 + exp(d_logits))
+
+plot(X1_range, a_probs, 
+     ylim=c(0,1),
+     type="l", 
+     lwd=3, 
+     lty=4, 
+     col="purple", 
+     xlab="Qualifying Position", ylab="Pr(Finish Better)", main="Probability of Finishing Race Better than Qualifying Position")
+# Front engine, sprint
+lines(X1_range, b_probs, 
+      type="l", 
+      lwd=3, 
+      lty=4, 
+      col="orange")
+# Not front engine, endurance
+lines(X1_range, c_probs, 
+      type="l", 
+      lwd=3, 
+      lty=4, 
+      col="blue")
+# Not front engine, sprint
+lines(X1_range, d_probs, 
+      type="l", 
+      lwd=3, 
+      lty=4, 
+      col="red")
+abline(h = .50, lty = 3)
+legend(35, 0.35, legend = c("Front Engine, Endurance","Front Engine, Sprint","Not Front, Endurance","Not Front, Sprint"), col = c("purple","orange","blue","red"), lty = 5, cex = 0.65,
+       title = "Legend", text.font = 1)
+
+
+
+
+
+b0 <- logit2$coef[1]
+X1 <- logit2$coef[2] # Qual position
+X2 <- logit2$coef[3] # Front engine
+X3 <- logit2$coef[4] # Endurance
+X4 <- logit2$coef[5] # Driver Category
+
+X1_range <- seq(from = min(gt_data2$QUAL_POS, na.rm = T), to = max(gt_data2$QUAL_POS, na.rm = T), by = 0.01)
+
+X2_val_f <- 1  # Front engine # mean(gt_data$Front_Eng) # Average of front_eng
+X2_val_nf <- 0 # Not front engine
+X3_val_e <- 1 # Endurance
+X3_val_s <- 0 # Sprint
+X4_val_p <- 3 # Pro Cup
+X4_val_si <- 2 # Silver Cup
+X4_val_pa <- 1 # Pro-AM Cup
+#X4_val_am <- 0 # AM Cup
+
+a3_logits <- b0 + X1*X1_range + X2*X2_val_f + X3*X3_val_e + X4*X4_val_p # Front engine, endurance, pro
+a2_logits <- b0 + X1*X1_range + X2*X2_val_f + X3*X3_val_e + X4*X4_val_si # Front engine, endurance, silver
+a1_logits <- b0 + X1*X1_range + X2*X2_val_f + X3*X3_val_e + X4*X4_val_pa # Front engine, endurance, Pro-AM
+#a0_logits <- b0 + X1*X1_range + X2*X2_val_f + X3*X3_val_e + X4*X4_val_am # Front engine, endurance, AM
+
+b3_logits <- b0 + X1*X1_range + X2*X2_val_f + X3*X3_val_s + X4*X4_val_p # Front engine, sprint, pro
+b2_logits <- b0 + X1*X1_range + X2*X2_val_f + X3*X3_val_s + X4*X4_val_si # Front engine, sprint, silver
+b1_logits <- b0 + X1*X1_range + X2*X2_val_f + X3*X3_val_s + X4*X4_val_pa # Front engine, sprint, Pro-AM
+#b0_logits <- b0 + X1*X1_range + X2*X2_val_f + X3*X3_val_s + X4*X4_val_p # Front engine, sprint, AM
+
+
+c3_logits <- b0 + X1*X1_range + X2*X2_val_nf + X3*X3_val_e + X4*X4_val_p # Not front engine, endurance, Pro
+c2_logits <- b0 + X1*X1_range + X2*X2_val_nf + X3*X3_val_e + X4*X4_val_si # Not front engine, endurance, Silver
+c1_logits <- b0 + X1*X1_range + X2*X2_val_nf + X3*X3_val_e + X4*X4_val_pa # Not front engine, endurance, Pro-AM
+#c0_logits <- b0 + X1*X1_range + X2*X2_val_nf + X3*X3_val_e + X4*X4_val_p # Not front engine, endurance, AM
+
+
+d3_logits <- b0 + X1*X1_range + X2*X2_val_nf + X3*X3_val_s + X4*X4_val_p # Not front engine, sprint, Pro
+d2_logits <- b0 + X1*X1_range + X2*X2_val_nf + X3*X3_val_s + X4*X4_val_si # Not front engine, sprint, Silver
+d1_logits <- b0 + X1*X1_range + X2*X2_val_nf + X3*X3_val_s + X4*X4_val_pa # Not front engine, sprint, Pro-AM
+#d0_logits <- b0 + X1*X1_range + X2*X2_val_nf + X3*X3_val_s + X4*X4_val_am # Not front engine, sprint, AM
+
+# Compute probabilities (exponentiate logged odds)
+a3_probs <- exp(a3_logits)/(1 + exp(a3_logits))
+a2_probs <- exp(a2_logits)/(1 + exp(a2_logits))
+a1_probs <- exp(a1_logits)/(1 + exp(a1_logits))
+#a0_probs <- exp(a0_logits)/(1 + exp(a0_logits))
+
+b3_probs <- exp(b3_logits)/(1 + exp(b3_logits))
+b2_probs <- exp(b2_logits)/(1 + exp(b2_logits))
+b1_probs <- exp(b1_logits)/(1 + exp(b1_logits))
+#b0_probs <- exp(b0_logits)/(1 + exp(b0_logits))
+
+c3_probs <- exp(c3_logits)/(1 + exp(c3_logits))
+c2_probs <- exp(c2_logits)/(1 + exp(c2_logits))
+c1_probs <- exp(c1_logits)/(1 + exp(c1_logits))
+#c0_probs <- exp(c0_logits)/(1 + exp(c0_logits))
+
+d3_probs <- exp(d3_logits)/(1 + exp(d3_logits))
+d2_probs <- exp(d2_logits)/(1 + exp(d2_logits))
+d1_probs <- exp(d1_logits)/(1 + exp(d1_logits))
+#d0_probs <- exp(d0_logits)/(1 + exp(d0_logits))
+
+
+```
+
+```{r, Driver Category Plots - Front Engine, Endurance, include = F, echo = F, warning = F}
+plot(X1_range, a3_probs, 
+     ylim=c(0,1),
+     type="l", 
+     lwd=3, 
+     lty=4, 
+     col="red", 
+     xlab="Qualifying Position", ylab="Pr(Finish Better)", main="Front Engine, Endurance [Driver Category]")
+# Front engine, endurance, Silver
+lines(X1_range, a2_probs, 
+      type="l", 
+      lwd=3, 
+      lty=4, 
+      col="purple")
+# Front engine, endurance, Pro-AM
+lines(X1_range, a1_probs, 
+      type="l", 
+      lwd=3, 
+      lty=4, 
+      col="blue")
+# Front engine, endurance, AM
+#lines(X1_range, a0_probs, 
+#      type="l", 
+#      lwd=3, 
+#      lty=4, 
+#      col="orange")
+abline(h = .50, lty = 3)
+legend(35, 0.35, legend = c("Pro Cup","Silver Cup","Pro-AM Cup"), col = c("red","purple","blue"), lty = 5, cex = 0.65,
+       title = "Legend", text.font = 1)
+```
+
+```{r, Driver Category Plots - Front Engine, Sprint, include = F, echo = F, warning = F}
+plot(X1_range, b3_probs, 
+     ylim=c(0,1),
+     type="l", 
+     lwd=3, 
+     lty=4, 
+     col="red", 
+     xlab="Qualifying Position", ylab="Pr(Finish Better)", main="Front Engine, Sprint [Driver Category]")
+# Front engine, sprint, Silver
+lines(X1_range, b2_probs, 
+      type="l", 
+      lwd=3, 
+      lty=4, 
+      col="purple")
+# Front engine, sprint, Pro-AM
+lines(X1_range, b1_probs, 
+      type="l", 
+      lwd=3, 
+      lty=4, 
+      col="blue")
+# Front engine, sprint, AM
+#lines(X1_range, b0_probs, 
+#      type="l", 
+#      lwd=3, 
+#      lty=4, 
+#      col="red")
+abline(h = .50, lty = 3)
+legend(35, 0.35, legend = c("Pro Cup","Silver Cup","Pro-AM Cup"), col = c("red","purple","blue"), lty = 5, cex = 0.65,
+       title = "Legend", text.font = 1)
+```
+
+```{r, Driver Category Plots - Non-Front Engine, Endurance, include = F, echo = F, warning = F}
+plot(X1_range, c3_probs, 
+     ylim=c(0,1),
+     type="l", 
+     lwd=3, 
+     lty=4, 
+     col="red", 
+     xlab="Qualifying Position", ylab="Pr(Finish Better)", main="Non-Front Engine, Endurance [Driver Category]")
+# Front engine, sprint, Silver
+lines(X1_range, c2_probs, 
+      type="l", 
+      lwd=3, 
+      lty=4, 
+      col="purple")
+# Front engine, sprint, Pro-AM
+lines(X1_range, c1_probs, 
+      type="l", 
+      lwd=3, 
+      lty=4, 
+      col="blue")
+# Front engine, sprint, AM
+#lines(X1_range, c0_probs, 
+#      type="l", 
+#      lwd=3, 
+#      lty=4, 
+#      col="orange")
+abline(h = .50, lty = 3)
+legend(35, 0.35, legend = c("Pro Cup","Silver Cup","Pro-AM Cup"), col = c("red","purple","blue"), lty = 5, cex = 0.65,
+       title = "Legend", text.font = 1)
+```
+
+```{r, Driver Category Plots - Non-Front Engine, Sprint, include = F, echo = F, warning = F}
+plot(X1_range, d3_probs, 
+     ylim=c(0,1),
+     type="l", 
+     lwd=3, 
+     lty=4, 
+     col="red", 
+     xlab="Qualifying Position", ylab="Pr(Finish Better)", main="Non-Front Engine, Sprint [Driver Category]")
+# Front engine, sprint, Silver
+lines(X1_range, d2_probs, 
+      type="l", 
+      lwd=3, 
+      lty=4, 
+      col="purple")
+# Front engine, sprint, Pro-AM
+lines(X1_range, d1_probs, 
+      type="l", 
+      lwd=3, 
+      lty=4, 
+      col="blue")
+# Front engine, sprint, AM
+#lines(X1_range, d0_probs, 
+#      type="l", 
+#      lwd=3, 
+#      lty=4, 
+#      col="orange")
+abline(h = .50, lty = 3)
+legend(35, 0.35, legend = c("Pro Cup","Silver Cup","Pro-AM Cup"), col = c("red","purple","blue"), lty = 5, cex = 0.65,
+       title = "Legend", text.font = 1)
+```
