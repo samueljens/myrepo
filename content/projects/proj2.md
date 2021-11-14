@@ -1,9 +1,9 @@
 ---
-#title: "Vestibulum: Olive Tadpole Pit Bull Terrier"
+title: "Web Scraping Congressional Leaders' Press Releases with R"
 
-#date: "2019-03-30"
+date: "2021-11-14"
 
-#links:
-#    website: 'https://github.com/hadisinaee/avicenna'
+links:
+    pdf: Congress_Leaders_Scraping_Fall2021.pdf
 ---
 
