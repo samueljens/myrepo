@@ -1,6 +1,6 @@
 ---
 title: "Their Economic Pain, Our Emotional
-Gain: Can Schadenfreude Motivate Responses to Redistributive?"
+Gain: Can Schadenfreude Motivate Responses to Redistributive Policies?"
 authors:
 - H. Hannah Nam, Samuel Jens, and Yanna Krupnikov
 - Presented at APSA's 2020 Annual Meeting
