@@ -60,11 +60,11 @@ h2 code {
 }
 
 .secondary_font {
-    font-family: 'Ubuntu Mono', serif;
+    font-family: 'Inter', serif;
 }
 
 .section-subtitle {
-    font-family: 'Ubuntu Mono', serif;
+    font-family: 'Inter', serif;
 }
 
 #profile_picture  {
@@ -87,7 +87,7 @@ h2 code {
 }   
 
 .about #email {
-    font-family: 'Ubuntu Mono', serif; 
+    font-family: 'Inter', serif; 
     margin: auto;
 }
 
@@ -195,7 +195,7 @@ h2 code {
 }
 
 .projects .project a{
-    font-family: 'Inter', serif;
+    font-family: 'Ubuntu Mono', serif;
     padding: .15%;
 }
 .projects .project .section-2 a:hover {
@@ -242,7 +242,7 @@ h2 code {
 }
 
 .tags_navigation .tag {
-    font-family: 'Ubuntu Mono', serif;
+    font-family: 'Inter', serif;
     padding: .15%;
     background-color: #8C1515;
     color: aliceblue;
@@ -260,7 +260,7 @@ h2 code {
 }
 
 .blog_nav_bar .item {
-    font-family: 'Ubuntu Mono', serif;
+    font-family: 'Inter', serif;
     padding: .15%;
     background-color: #8C1515;
     color: aliceblue;
@@ -269,7 +269,7 @@ h2 code {
 }
 
 .reading_time {
-    font-family: 'Ubuntu Mono', serif;
+    font-family: 'Inter', serif;
     margin-top: -.5%;
     margin-bottom: 1%;
 }
