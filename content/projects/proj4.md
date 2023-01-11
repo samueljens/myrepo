@@ -1,5 +1,5 @@
 ---
-title: "Presidential Rankings and Skowronek's (2003) Regimes"
+title: "Presidential Rankings and Skowronek's (1993) Regimes"
 
 date: "2023-01-11"
 
