@@ -54,7 +54,7 @@ socials:
   #google_scholar: YOUR_NAME
   #twitch: YOUR_NAME
   linkedin: samuel-jens-472040a0/
-  twitter: SamuelAJens
+  #twitter: SamuelAJens
 title: about
 ---
 
