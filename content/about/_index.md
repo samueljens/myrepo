@@ -1,19 +1,20 @@
 ---
 education:
 - course:
-    degree: Ph.D.
+    degree: PhD
+    end_date: "2023"
     institution: Stony Brook University
     major: American Politics and Political Psychology
     start_date: "2018"
 - course:
-    degree: M.A.
+    degree: MA
     end_date: "2018"
     institution: Stony Brook University
     major: Political Science
     other_info: 
     start_date: "2017"
 - course:
-    degree: B.A.
+    degree: BA
     end_date: "2017"
     institution: College of William and Mary
     major: Psychology (Honors) and Government
