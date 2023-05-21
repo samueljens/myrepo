@@ -3,7 +3,7 @@ title: "Risk Aversion and Party Relation in the U.S. Congress"
 authors:
 - Ryan Vander Wielen and Samuel Jens
 #- Another Researcher
-date: "2022-08-01"
+date: "2023-08-01"
 
 publication: "working research"
 
