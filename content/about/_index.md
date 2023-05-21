@@ -60,7 +60,7 @@ title: about
 
 **Hello and welcome,**
 
-I am a PhD candidate in the Department of Political Science at Stony Brook University. My dissertation measures risk aversion of elected officials in the US Congress using speeches (text) from the Congressional Record. My committee is chaired by Professor Ryan Vander Wielen and includes Professor Michael Peress and Professor Stanley Feldman. 
+I am a recent PhD graduate from the Department of Political Science at Stony Brook University. My dissertation measures risk aversion of elected officials in the U.S. Congress using speeches (text) from the *Congressional Record*. My committee is chaired by Professor Ryan Vander Wielen and includes Professor Michael Peress and Professor Stanley Feldman. 
 
 The first chapter of my dissertation presents a methods-based approach for measuring traits of legislators using text/speech data. My second and third chapters examine how risk aversion influences the progressive ambition of House members and their legislative styles, respectively. 
 
