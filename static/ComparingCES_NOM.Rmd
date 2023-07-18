@@ -1,0 +1,209 @@
+---
+title: "Comparing States' CES Ideology and Senators' NOMINATE Values"
+author: "Samuel Jens"
+#date: "`r Sys.Date()`"
+date: "July 18, 2023"
+output: pdf_document
+fontsize: 12pt
+indent: TRUE
+header-includes:
+  - \usepackage{indentfirst}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Introduction
+
+In this blog post I explore the relationship between a state's average ideology and their U.S. Senators' NOMINATE (roll call) ideology. This post is intended to be brief, though if anyone would like further information please let me know.
+
+I use the pre-2022 election data from the Cooperative Election Study data (formerly known as the Cooperative Congressional Election Study, CCES). I use the 2022 survey to compare respondents' ideology with the ideology of their two senators during the January 2021 to January 2023 Congress. I focus most specifically on two main columns in the data: "inputstate" and "ideo5." I aggregate self-reported ideology responses by state. Unfortunately, the 2022 pre-election CES only includes a 5-point measure of respondents' ideology (e.g., very liberal, liberal, moderate, conservative, very conservative) instead of the common 7-point measure. Data for the 2022 CES may be found here: <https://cces.gov.harvard.edu>.
+
+I also include information about U.S. Senators' roll call ideology using the NOMINATE First Dimension values for the 117th Congress (January 2021 to early January 2023). This metric is a scaling approach in which roll call votes are the input. The output generally ranges from -1 to 1, with more liberal politicians closer to -1 and more conservative politicians closer to 1. Data for the NOMINATE values may be found here: <https://voteview.com/data>.
+
+
+```{r Read in data, include = FALSE, echo = FALSE, warning = FALSE}
+# Read in CES data
+library(readr)
+ces22 <- read_csv("~/Downloads/CES22_Common.csv")
+ 
+table(ces22$inputstate)
+
+library(stringr)
+ces22$inputstate0 <- str_pad(ces22$inputstate, 2, pad = '0')  
+
+# 1 very liberal; 5 conservative 
+table(ces22$ideo5)
+
+# Code "not sure" (6) as missing
+ces22$ideology <- ifelse(ces22$ideo5 == 6, NA, ces22$ideo5)
+table(ces22$ideology)
+
+# Aggregate function to calculate mean ideology by respondent state
+state_mean <- aggregate(x = ces22$ideology,
+                       by = list(ces22$inputstate0),
+                       FUN = mean, na.rm = T)
+
+# Convert fips code to name 
+library(tidycensus)
+fips <- force(fips_codes)
+fips <- fips[,c(1:2)]
+fips0 <- unique(fips)
+
+# Merge together the CES state data and fips codes
+dat <- merge(state_mean, fips0,
+               by.x = c('Group.1'),
+               by.y = c('state_code'))
+
+# Change name of "x" column
+names(dat)[names(dat) == "x"] <- "state_ideo_mean"
+
+# Remove Washington, DC from data
+dat <- subset(dat, state != 11)
+table(dat$state)
+
+
+# Create state name column using built in R command
+dat$state_name <- state.name[match(dat$state, state.abb)]
+
+
+# Load in NOMINATE Values
+nom <- read_csv("~/Downloads/S117_members.csv")
+
+# Remove president2 (x2) and special election senators (x2)
+nom <- nom[-c(1,2,11,22), ]
+
+# Merge together the NOMINATE and CES dataframes
+dat2 <- merge(nom, dat,
+              by.x = c('state_abbrev'),
+              by.y = c('state'))
+
+# Cheeky OLS to compare the two
+summary(lm(nominate_dim1 ~ state_ideo_mean, data = dat2))
+
+# Needed for alpha below
+library(scales) 
+
+```
+
+## First Plot
+
+For the first plot I present the relationship between a state's average ideological position, based on CES survey responses, with its two senators' roll call ideology. The red line is the line of best fit from an ordinary least squares (OLS) regression. The vertical magenta line presents the midpoint of the CES ideology scale -- moderate. 
+
+We observe a positive relationship in the figure. States with more conservative voters tend to have more conservative senators.
+
+```{r first plot, include = TRUE, echo = FALSE, warning = FALSE}
+plot(dat2$state_ideo_mean, dat2$nominate_dim1, 
+     xlim = c(2,4), ylim = c(-1,1),
+     xlab = c('Mean State Ideology (Liberal - Conservative)'),
+     ylab = c('Senators\' 1D NOMINATE Value'),
+     main = c('Comparing Average State CES Ideology\n and Senators\' NOMINATE Ideology'))
+abline(lm(nominate_dim1 ~ state_ideo_mean, data = dat2), col = 'red')
+abline(v = 3, lty = 2, col = 'magenta')
+
+```
+
+
+## Further Plotting Details
+
+The plot below adds some helpful details. I add "D" and "R" labels to the points for Democrats and Republicans, respectively. I also color the labels blue for Democrats and red for Republicans. These details are added with the "points" command. 
+
+
+```{r adding plot details, include = TRUE, echo = TRUE, warning = FALSE}
+# Create Republican senators
+rep <- subset(dat2, party_code == 200)
+
+# Create Dem (and 2 Ind. Dem-caucus) senators
+dem <- subset(dat2, party_code != 200)
+
+plot(dat2$state_ideo_mean, dat2$nominate_dim1, 
+     xlim = c(2,4), ylim = c(-1,1),
+     xlab = c('Mean State Ideology (Liberal - Conservative)'),
+     ylab = c('Senators\' 1D NOMINATE Value'),
+     main = c('Comparing Average State CES Ideology
+and Senators\' NOMINATE Ideology'),
+     col = alpha(0.01))
+# Republican points
+points(rep$state_ideo_mean, rep$nominate_dim1, col = 'red', pch = 'R') 
+# Democratic points
+points(dem$state_ideo_mean, dem$nominate_dim1, col = 'blue', pch = 'D') 
+# Add the regression line
+abline(lm(nominate_dim1 ~ state_ideo_mean, data = dat2), col = 'black')
+# Add a vertical line at the midpoint (i.e., moderate)
+abline(v = 3, lty = 2, col = 'magenta')
+
+
+```
+
+&nbsp;
+
+This plot provides more information of the relationship. The Republican senators are more closely clustered in the figure relative to Democratic senators. Democratic senators also appear to represent states with a wider range of ideologies compared to Republican senators.
+
+There is a positive, and expected, relationship between a state's respondents' self-reported ideology and their senators' roll call ideology. More conservative states tend to have more conservative senators, while more liberal voters tend to have more liberal senators. However, the bivariate relationship contains a lot of noise. Part of the reason is that the sample of respondents in the CES survey may not be fully representative for each state. Furthermore, we should not necessarily expect roll call ideology of each senator to be perfectly aligned with their state's voters' ideology -- they are measured two different ways (i.e., one with a 5-point survey and one with roll call votes). 
+
+## Which States and Senators Do Not Align?
+
+The table below presents the "outliers" from the figure above -- those Democratic senators who represent slightly conservative states, and those Republican senators who represent slightly liberal states. I include the number of respondents for each state. Some states have over 1,000 CES respondents while others have fewer than 250. 
+
+```{r Senator Table 1, results = "asis", include = TRUE, echo = FALSE}
+
+rep2 <- subset(rep, state_ideo_mean < 3)
+
+dem2 <- subset(dem, state_ideo_mean > 3)
+
+not_align <- rbind(dem2,rep2)
+
+not_align <- not_align[ , c(1,7,10,14,24)]
+
+sen_tbl = tibble(
+    State = c('Arizona','Arizona',
+            'Iowa','Iowa',
+            'Maine','Montana',
+            'Nevada','Nevada',
+            'Ohio','Pennsylvania',
+            'Wisconsin','West Virginia'),
+  Senator = c('Mark Kelly','Kyrsten Sinema',
+              'Joni Ernst', 'Chuck Grassley',
+              'Susan Collins','Jon Tester',
+              'Catherine Cortez Masto','Jacklyn Rosen',
+              'Rob Portman','Bob Casey',
+              'Ron Johnson','Joe Manchin'),
+  Party = c('D','D',
+            'R','R',
+            'R','D',
+            'D','D',
+            'R','D',
+            'R','D'),
+  `Senator Ideology` = c(-0.197, -0.105,
+                         0.541, 0.356,
+                         0.117, -0.214,
+                         -0.360, -0.288,
+                         0.371, -0.313,
+                         0.627, -0.059),
+  `State Ideology` = c(3.089, 3.089,
+                       2.958, 2.958,
+                       2.877, 3.061,
+                       3.017, 3.017,
+                       2.950, 3.006,
+                       2.951, 3.193),
+  `State N` = c(1625, 1625,
+                595, 595,
+                323, 224,
+                758, 758,
+                2515, 3106,
+                1253, 458))
+
+
+knitr::kable(sen_tbl, format = "markdown")
+
+```
+
+Intriguingly, both senators from Arizona (Democrats), Iowa (Republicans), and Nevada (Democrats) represent states slightly at odds, based on the 2022 CES respondents, with their own NOMINATE ideology.
+
+It also important to note that most of the states in the table have average ideology values very close to the midpoint of 3. That being said, the largest two discrepancies occur for Senators Joni Ernst (R-IA) and Ron Johnson (R-WI) who are both more conservative than their state's average ideology.
+
+Another interesting finding is that Democratic Senator Joe Manchin (D-WV) represents a state that, based on the CES responses, is much more conservative than many other states represented by Republican senators!
+
+This blog post serves as a brief foray into plotting and comparing some different types data - both politicians' voting habits and voter surveys. Please let me know if you have any questions or feedback. 
