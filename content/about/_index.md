@@ -54,16 +54,18 @@ socials:
   #github: YOUR_NAME
   #google_scholar: YOUR_NAME
   #twitch: YOUR_NAME
-  linkedin: samuel-jens-472040a0/
+  linkedin: samuel-jens/
   #twitter: SamuelAJens
 title: about
 ---
 
 **Hello and welcome,**
 
-I am a recent PhD graduate from the Department of Political Science at Stony Brook University. My dissertation measures risk aversion of elected officials in the U.S. Congress using speeches (text) from the *Congressional Record*. My committee is chaired by Professor Ryan Vander Wielen and includes Professor Michael Peress and Professor Stanley Feldman. 
+I am currently a research associate at the Center for News, Technology & Innovation. 
 
-The first chapter of my dissertation presents a methods-based approach for measuring traits of legislators using text/speech data. My second and third chapters examine how risk aversion influences the progressive ambition of House members and their legislative styles, respectively. 
+I am a recent PhD graduate from the Department of Political Science at Stony Brook University. I remain an adjuct lecturer at Stony Brook. My dissertation measured risk aversion of elected officials in the U.S. Congress using speeches (text) from the *Congressional Record*. My committee was chaired by Professor Ryan Vander Wielen and included Professor Michael Peress and Professor Stanley Feldman. 
+
+The first chapter of my dissertation presented a methods-based approach for measuring traits of legislators using text/speech data. My second and third chapters examined how risk aversion influences the progressive ambition of House members and their legislative styles, respectively. 
 
 Outside of school, I enjoy biking, camping, and GT3/4 racing.
 
