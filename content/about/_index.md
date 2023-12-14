@@ -63,7 +63,7 @@ title: about
 
 I am currently a research associate at the Center for News, Technology & Innovation. 
 
-I am a recent PhD graduate from the Department of Political Science at Stony Brook University. I remain an adjuct lecturer at Stony Brook. My dissertation measured risk aversion of elected officials in the U.S. Congress using speeches (text) from the *Congressional Record*. My committee was chaired by Professor Ryan Vander Wielen and included Professor Michael Peress and Professor Stanley Feldman. 
+I am a recent PhD graduate from the Department of Political Science at Stony Brook University where I also remain an adjunct lecturer. My dissertation measured risk aversion of elected officials in the U.S. Congress using speeches (text) from the *Congressional Record*. My committee was chaired by Professor Ryan Vander Wielen and included Professor Michael Peress and Professor Stanley Feldman. 
 
 The first chapter of my dissertation presented a methods-based approach for measuring traits of legislators using text/speech data. My second and third chapters examined how risk aversion influences the progressive ambition of House members and their legislative styles, respectively. 
 
