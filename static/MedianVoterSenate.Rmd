@@ -1,0 +1,74 @@
+---
+title: "Median Voter and Senate Representation"
+author: "Samuel Jens"
+date: "2023-04-10"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r data}
+library(readr)
+ces <- read_csv("~/Downloads/CES20_Common_OUTPUT_vv.csv")
+
+# inputstate = R state
+# CC20_340a ideology (1 very liberal; 7 very conservative; 8 not sure)
+# ideo5 (1 very liberal; 5 very conservative; 6 not sure)
+
+library(stringr)
+ces$inputstate0 <- str_pad(ces$inputstate, 2, pad = '0')  
+
+ces$ideo7 <- ifelse(ces$CC20_340a == 8, NA, ces$CC20_340a)
+                                                                     
+library(tidycensus)
+fips <- force(fips_codes)
+fips <- fips[,c(1:2)]
+fips0 <- unique(fips)
+
+
+dat <- merge(ces, fips0,
+               by.x = c('inputstate0'),
+               by.y = c('state_code'))
+
+dat <- subset(dat, inputstate0 != 11)
+table(dat$inputstate0)
+
+plot(density(dat$ideo7, bw = 0.5, na.rm = T))
+median(dat$ideo7, na.rm = T)
+mean(dat$ideo7, na.rm = T)
+
+
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r plotting states, echo=FALSE}
+trial <- aggregate(x = dat$ideo7, na.rm=T,
+                       by = list(dat$state),
+                       FUN = median)
+
+library(ggplot2)
+ggplot(dat, aes(x = ideo7, colour = state)) +
+  geom_density(bw = .75) + theme_classic()
+
+library(ggridges)
+theme_set(theme_classic())
+
+ggplot(dat, aes(x = ideo7, y = state)) + 
+  geom_density_ridges(fill = 'purple', rel_min_height = 0.01, scale = 1)
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
