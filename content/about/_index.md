@@ -61,7 +61,7 @@ title: about
 
 **Hello and welcome,**
 
-I am currently a Research Associate at the Center for News, Technology & Innovation.
+I am currently an Elections Data Scientist at the Associated Press.
 
 I am a PhD graduate from the Department of Political Science at Stony Brook University where I also remain an adjunct lecturer. My dissertation measured the risk aversion of elected officials in the U.S. Congress using speeches (text) from the *Congressional Record*. My committee was chaired by Professor Ryan Vander Wielen and included Professor Michael Peress and Professor Stanley Feldman. 
 
